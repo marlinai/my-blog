@@ -1,5 +1,5 @@
 // 此文件由 generate_list.py 自动生成，请勿手动编辑
-// 更新时间: 2026-06-28 15:50:36
+// 更新时间: 2026-06-28 16:02:53
 const BLOG_CONFIG = {
     title: "我的极简个人博客",
     owner: "marlinai",
@@ -13,6 +13,7 @@ const BLOG_CONFIG = {
         { file: "hello-world.md", title: "你好，世界！", date: "2026-06-28", summary: "这是我的第一篇个人博客文章。它完全运行在 GitHub Pages 上，没有借用任何传统的后端服务器。" },
         { file: "hw.md", title: "你好，世界 文件名缩写！", date: "2026-06-28", summary: "这是我的第一篇个人博客文章。它完全运行在 GitHub Pages 上，没有借用任何传统的后端服务器。" },
         { file: "test.md", title: "这是测试页", date: "2026-06-28", summary: null },
-        { file: "test2.md", title: "这是第二个测试", date: "2026-06-28", summary: null }
+        { file: "test2.md", title: "这是第二个测试", date: "2026-06-28", summary: null },
+        { file: "test3.md", title: "这是手机上传的测试页", date: "2026-06-28", summary: null }
     ]
 };
