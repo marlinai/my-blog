@@ -80,11 +80,6 @@
         // 2. 路由判断
         if (currentPost) {
             // 【详情页】：直接 fetch md 文件，不依赖 config.js
-            const fileSafe = currentPost.replace(/\.\.\/|\.\.\\/g, '').replace(/[^a-zA-Z0-9_\-\.]/g, '');
-            if (fileSafe !== currentPost) {
-                show404();
-                return;
-            }
             fetch(`./posts/${currentPost}`)
                 .then(response => {
                     if (!response.ok) throw new Error('文章未找到');
@@ -151,14 +146,8 @@
             } catch (err) {
                 // API 失败或限流 → 兜底使用 config.js
                 console.warn('GitHub API 请求失败，使用本地 config.js 兜底:', err.message);
-                const fallback = BLOG_CONFIG.articles.map(a => ({
-                    file: a.file,
-                    title: a.title || a.file.replace('.md', '').replace(/-/g, ' '),
-                    date: a.date || ''
-                }));
-                // 设置页面标题（如果是首页）
-                document.title = BLOG_CONFIG.title;
-                renderArticleList(fallback);
+                // 合并 config.js 中的文章和本地文章列表
+                renderArticleList(BLOG_CONFIG.articles);
             }
         }
 
@@ -177,16 +166,20 @@
         function renderArticleList(articles) {
             let listHtml = `<h2 class="text-2xl font-bold text-gray-900 mb-6">📝 近期文章</h2>`;
 
-            if (articles.length === 0) {
+            if (!articles || articles.length === 0) {
                 listHtml += `<p class="text-gray-500">主人很懒，还没有写任何文章~</p>`;
             } else {
                 listHtml += `<ul class="space-y-4">`;
                 articles.forEach(article => {
+                    const title = article.title || article.file.replace('.md', '');
+                    const file = article.file;
                     listHtml += `
                         <li class="border-b border-gray-100 pb-3">
-                            <a href="?post=${article.file}" class="text-lg font-medium text-blue-600 hover:text-blue-800 hover:underline transition">
-                                ${escapeHtml(article.title)}
+                            <a href="?post=${file}" class="text-lg font-medium text-blue-600 hover:text-blue-800 hover:underline transition">
+                                ${escapeHtml(title)}
                             </a>
+                            ${article.date ? `<span class="text-sm text-gray-400 mx-2">${article.date}</span>` : ''}
+                            ${article.summary ? `<p class="text-sm text-gray-500 mt-1">${escapeHtml(article.summary)}</p>` : ''}
                         </li>
                     `;
                 });
