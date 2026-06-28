@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(python3 generate_list.py --title \"我的极简个人博客\")"
-    ]
-  }
-}
