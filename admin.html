@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>博客后台管理系统</title>
+    <!-- 引入 Tailwind CSS v4 -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        @layer base {
+            body {
+                background-color: #f8fafc;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col font-sans">
+
+    <!-- 顶部导航 -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">B</div>
+                <span class="text-lg font-bold text-slate-900">博客后台管理</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="index.html" class="text-sm text-slate-600 hover:text-blue-600 transition">查看博客首页</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主体区域 -->
+    <main class="flex-grow max-w-6xl w-full mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- 左侧配置面板 (1/3 宽度) -->
+            <div class="space-y-6 lg:col-span-1">
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-xs">
+                    <h2 class="text-base font-semibold text-slate-900 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                        GitHub 鉴权配置
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 mb-1">GitHub 账户名 / 组织名</label>
+                            <input type="text" id="repo-owner" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-600" placeholder="例如: github-username">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 mb-1">仓库名称 (Repository)</label>
+                            <input type="text" id="repo-name" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-600" placeholder="例如: my-blog">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 mb-1">分支名称 (Branch)</label>
+                            <input type="text" id="repo-branch" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-600" value="main" placeholder="main">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 mb-1">存储路径 (相对仓库根目录)</label>
+                            <input type="text" id="repo-path" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-600" value="posts/" placeholder="posts/">
+                        </div>
+                        <div class="pt-2 border-t border-slate-100">
+                            <label class="block text-xs font-medium text-amber-700 mb-1 flex items-center">
+                                <svg class="w-3.5 h-3.5 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                                个人访问令牌 (Token)
+                            </label>
+                            <input type="password" id="github-token" autocomplete="off" class="w-full px-3 py-2 border border-amber-200 bg-amber-50/30 rounded-lg text-sm focus:outline-none focus:border-amber-500 font-mono" placeholder="ghp_xxxxxxxxxxxx">
+                            <p class="text-[11px] text-slate-400 mt-1">此令牌只驻留在您的浏览器内存中，绝不上传至任何服务器，关闭网页即失效。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 text-slate-300 p-5 rounded-xl text-xs space-y-2 leading-relaxed">
+                    <div class="text-white font-medium mb-1">💡 推荐的 Token 最小权限配置：</div>
+                    <p>1. 访问 GitHub -> Settings -> Developer settings -> Personal access tokens -> Fine-grained tokens</p>
+                    <p>2. 点击 <strong>Generate new token</strong></p>
+                    <p>3. <strong>Repository access</strong> 选择 "Only select repositories" 并指定你的博客仓库</p>
+                    <p>4. <strong>Permissions</strong> 找到 <strong>Contents</strong> 并设置为 <span class="text-emerald-400 font-medium">Read and write</span></p>
+                </div>
+            </div>
+
+            <!-- 右侧编辑器面板 (2/3 宽度) -->
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-xs flex flex-col min-h-[550px]">
+                    <h2 class="text-base font-semibold text-slate-900 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        文章在线编辑器
+                    </h2>
+
+                    <div class="space-y-4 flex-grow flex flex-col">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">文件名 <span class="text-rose-500">*</span></label>
+                                <input type="text" id="filename" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-600 font-mono" placeholder="例如: my-new-post.md">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">提交注释 (Commit Message)</label>
+                                <input type="text" id="commit-msg" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-600" placeholder="默认: Web Admin: Add/Update file">
+                            </div>
+                        </div>
+
+                        <div class="flex-grow flex flex-col">
+                            <label class="block text-xs font-medium text-slate-600 mb-1">文章内容 (Markdown 格式) <span class="text-rose-500">*</span></label>
+                            <textarea id="markdown-content" class="w-full flex-grow p-4 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-600 font-mono resize-none min-h-[300px]" placeholder="---&#10;title: 文章标题&#10;date: 2026-06-28&#10;---&#10;&#10;# 在这里开始编写你的文章内容..."></textarea>
+                        </div>
+                        
+                        <!-- 状态提示 -->
+                        <div id="status-bar" class="hidden p-3 rounded-lg text-sm font-medium"></div>
+
+                        <div class="flex justify-end pt-2">
+                            <button onclick="publishArticle()" id="btn-submit" class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-6 py-2.5 rounded-lg transition shadow-xs flex items-center space-x-2">
+                                <span id="btn-text">发布至 GitHub 仓库</span>
+                                <svg id="spinner" class="animate-spin -ml-1 mr-3 h-4 w-4 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400">
+        零信任客户端架构 · 安全鉴权机制 · 本地内存执行
+    </footer>
+
+    <!-- 逻辑脚本 -->
+    <script>
+        // 尝试从 localStorage 恢复非敏感配置，减少每次填写的麻烦
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedOwner = localStorage.getItem('blog_repo_owner');
+            const savedName = localStorage.getItem('blog_repo_name');
+            const savedBranch = localStorage.getItem('blog_repo_branch');
+            const savedPath = localStorage.getItem('blog_repo_path');
+
+            if (savedOwner) document.getElementById('repo-owner').value = savedOwner;
+            if (savedName) document.getElementById('repo-name').value = savedName;
+            if (savedBranch) document.getElementById('repo-branch').value = savedBranch;
+            if (savedPath) document.getElementById('repo-path').value = savedPath;
+        });
+
+        // 显示状态提示条
+        function showStatus(message, type = 'info') {
+            const statusBar = document.getElementById('status-bar');
+            statusBar.classList.remove('hidden', 'bg-blue-5,text-blue-700', 'bg-emerald-5,text-emerald-700', 'bg-rose-5,text-rose-700');
+            
+            if (type === 'success') {
+                statusBar.className = "p-3 rounded-lg text-sm font-medium bg-emerald-50 text-emerald-700 border border-emerald-100";
+            } else if (type === 'error') {
+                statusBar.className = "p-3 rounded-lg text-sm font-medium bg-rose-50 text-rose-700 border border-rose-100";
+            } else {
+                statusBar.className = "p-3 rounded-lg text-sm font-medium bg-blue-50 text-blue-700 border border-blue-100";
+            }
+            statusBar.innerText = message;
+        }
+
+        async function publishArticle() {
+            // 1. 获取输入值
+            const token = document.getElementById('github-token').value.trim();
+            const owner = document.getElementById('repo-owner').value.trim();
+            const repo = document.getElementById('repo-name').value.trim();
+            const branch = document.getElementById('repo-branch').value.trim() || 'main';
+            let path = document.getElementById('repo-path').value.trim() || 'posts/';
+            
+            let filename = document.getElementById('filename').value.trim();
+            const commitMsg = document.getElementById('commit-msg').value.trim() || `Web Admin: Add/Update ${filename}`;
+            const content = document.getElementById('markdown-content').value;
+
+            // 2. 基础验证
+            if (!token) return showStatus('请输入您的 GitHub Personal Access Token！', 'error');
+            if (!owner || !repo) return showStatus('账户名和仓库名不能为空！', 'error');
+            if (!filename) return showStatus('请输入文件名 (例如: hello.md)！', 'error');
+            if (!content) return showStatus('文章内容不能为空！', 'error');
+
+            // 规范化文件路径
+            if (!path.endsWith('/')) path += '/';
+            if (path.startsWith('/')) path = path.substring(1);
+            if (filename.startsWith('/')) filename = filename.substring(1);
+
+            // 记住非敏感配置
+            localStorage.setItem('blog_repo_owner', owner);
+            localStorage.setItem('blog_repo_name', repo);
+            localStorage.setItem('blog_repo_branch', branch);
+            localStorage.setItem('blog_repo_path', path);
+
+            // UI 状态转换成加载中
+            const btnSubmit = document.getElementById('btn-submit');
+            const btnText = document.getElementById('btn-text');
+            const spinner = document.getElementById('spinner');
+            
+            btnSubmit.disabled = true;
+            btnSubmit.classList.add('opacity-70', 'cursor-not-allowed');
+            btnText.innerText = '正在提交至云端...';
+            spinner.classList.remove('hidden');
+            showStatus('正在连接 GitHub API，请稍候...', 'info');
+
+            const targetUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}${filename}`;
+
+            try {
+                // 3. 核心步骤：先探测该文件在仓库中是否存在。
+                // 如果存在，需要获取该文件的 `sha` 标识才能完成覆盖，否则 GitHub 拒绝提交。
+                let fileSha = null;
+                const checkRes = await fetch(`${targetUrl}?ref=${branch}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                if (checkRes.ok) {
+                    const fileData = await checkRes.json();
+                    fileSha = fileData.sha; // 文件存在，拿到它的旧 SHA 戳
+                }
+
+                // 4. 对内容进行安全的 Base64 编码 (使用 TextEncoder 完美兼容中文与符号)
+                const utf8Bytes = new TextEncoder().encode(content);
+                let binaryStr = '';
+                for (let i = 0; i < utf8Bytes.length; i++) {
+                    binaryStr += String.fromCharCode(utf8Bytes[i]);
+                }
+                const base64Content = btoa(binaryStr);
+
+                // 5. 构建请求体
+                const bodyData = {
+                    message: commitMsg,
+                    content: base64Content,
+                    branch: branch
+                };
+                // 如果是覆盖更新文件，必须带上旧的 sha 戳
+                if (fileSha) {
+                    bodyData.sha = fileSha;
+                }
+
+                // 6. 发起 PUT 请求推送文件
+                const uploadRes = await fetch(targetUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/vnd.github.v3+json'
+                    },
+                    body: JSON.stringify(bodyData)
+                });
+
+                if (uploadRes.ok) {
+                    showStatus(`🎉 发布成功！文章已推送到 [${path}${filename}]。`, 'success');
+                    // 清空文件名和内容区域防止误重发
+                    document.getElementById('filename').value = '';
+                    document.getElementById('markdown-content').value = '';
+                } else {
+                    const errData = await uploadRes.json();
+                    showStatus(`提交失败原因: ${errData.message || '未知错误'}`, 'error');
+                }
+
+            } catch (error) {
+                console.error(error);
+                showStatus(`网络或客户端执行异常: ${error.message}`, 'error');
+            } finally {
+                // 恢复 UI 按钮状态
+                btnSubmit.disabled = false;
+                btnSubmit.classList.remove('opacity-70', 'cursor-not-allowed');
+                btnText.innerText = '发布至 GitHub 仓库';
+                spinner.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
