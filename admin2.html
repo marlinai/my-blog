@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>安全级 - 博客后台管理系统</title>
+    <title>博客后台管理系统</title>
     <style>
         /* 纯本地原生安全样式，不依赖任何第三方 CDN */
         :root {
@@ -99,8 +99,12 @@
             </div>
 
             <div class="tip-box">
-                <strong>🛡️ 安全隔离机制说明：</strong><br><br>
-                当前页面已被切断所有外部 CDN 加载渠道。页面内部不包含任何第三方 JavaScript 代码，所有的渲染与网络中转均通过浏览器原生的核心组件直接对接 GitHub API 官方节点（api.github.com），可完全免疫网络中间人劫持与前端供应链漏洞威胁。
+                <strong>💡 推荐的 Token 最小权限配置：</strong><br>
+                    <p>1. 访问 GitHub -> Settings -> Developer settings -> Personal access tokens -> Fine-grained tokens</p>
+                    <p>2. 点击 <strong>Generate new token</strong></p>
+                    <p>3. <strong>Repository access</strong> 选择 "Only select repositories" 并指定你的博客仓库</p>
+                    <p>4. <strong>Permissions</strong> 找到 <strong>Contents</strong> 并设置为 <span class="text-emerald-400 font-medium">Read and write</span></p>
+                
             </div>
         </div>
 
