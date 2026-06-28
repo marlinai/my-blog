@@ -91,11 +91,6 @@
                     const title = firstLine.startsWith('# ') ? firstLine.replace('# ', '').trim() : currentPost;
                     document.title = title + ' - ' + BLOG_CONFIG.title;
                     contentDiv.innerHTML = marked.parse(markdownText);
-                    // 更新 URL（去除 index.html 前缀）
-                    if (window.location.pathname.endsWith('index.html')) {
-                        const newUrl = '?post=' + currentPost;
-                        window.history.replaceState(null, '', newUrl);
-                    }
                 })
                 .catch(err => {
                     show404();
