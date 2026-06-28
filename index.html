@@ -119,18 +119,32 @@
                     return;
                 }
 
-                // 用 Promise.all 批量获取每个文件的内容来提取标题
+                // 用 Promise.all 批量获取每个文件的内容（提取标题）和最后提交时间
                 const articles = await Promise.all(
                     posts.map(async (file) => {
-                        const res = await fetch(file.download_url);
-                        const text = await res.text();
+                        const [contentRes, commitRes] = await Promise.all([
+                            fetch(file.download_url),
+                            fetch(`https://api.github.com/repos/${BLOG_CONFIG.owner}/${BLOG_CONFIG.repo}/commits?path=posts/${encodeURIComponent(file.name)}&per_page=1`),
+                        ]);
+                        const text = await contentRes.text();
                         // 从首行 # 提取标题
                         const firstLine = text.split('\n')[0];
                         const title = firstLine.startsWith('# ') ? firstLine.replace('# ', '').trim() : file.name.replace('.md', '');
+
+                        // 从最后一次 commit 中提取修改时间
+                        let date = '';
+                        if (commitRes.ok) {
+                            const commits = await commitRes.json();
+                            if (commits.length > 0) {
+                                const dateStr = commits[0].commit.committer.date;
+                                date = dateStr ? dateStr.substring(0, 10) : '';
+                            }
+                        }
+
                         return {
                             file: file.name,
                             title: title,
-                            date: file.size ? '' : '',
+                            date: date,
                         };
                     })
                 );
