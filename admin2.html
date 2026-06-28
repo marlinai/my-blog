@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>安全级 - 博客后台管理系统</title>
+    <style>
+        /* 纯本地原生安全样式，不依赖任何第三方 CDN */
+        :root {
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --warning-bg: #fffbeb;
+            --warning-border: #fde68a;
+            --warning-text: #b45309;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-main); color: var(--text-main); min-h: 100vh; display: flex; flex-direction: column; }
+        header { background: var(--bg-card); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 50; }
+        .header-container { max-width: 1200px; margin: 0 auto; padding: 0 16px; height: 64px; display: flex; items-center: center; justify-content: space-between; align-items: center;}
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .logo { w: 32px; height: 32px; background: var(--primary); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; padding: 4px 10px; }
+        .brand-title { font-size: 18px; font-weight: bold; }
+        .home-link { font-size: 14px; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+        .home-link:hover { color: var(--primary); }
+        main { flex-grow: 1; max-width: 1200px; w: 100%; margin: 0 auto; padding: 32px 16px; display: grid; grid-template-columns: 1fr; gap: 32px; }
+        @media (min-width: 1024px) { main { grid-template-columns: 1fr 2fr; } }
+        .card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .card-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-size: 12px; font-weight: 500; color: var(--text-muted); margin-bottom: 6px; }
+        input[type="text"], input[type="password"], textarea { w: 100%; width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s; }
+        input:focus, textarea:focus { border-color: var(--primary); }
+        .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+        .token-zone { pt: 8px; border-top: 1px dashed var(--border-color); margin-top: 16px; padding-top: 16px;}
+        .token-input { border-color: var(--warning-border) !important; background-color: rgba(253, 230, 138, 0.1); }
+        .tip-box { background: #0f172a; color: #cbd5e1; padding: 20px; border-radius: 12px; font-size: 12px; line-height: 1.6; margin-top: 24px; }
+        .tip-box strong { color: white; }
+        .grid-2 { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 16px; }
+        @media (min-width: 768px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+        .editor-container { display: flex; flex-direction: column; height: 100%; min-height: 480px; }
+        textarea { flex-grow: 1; resize: none; min-height: 320px; padding: 16px; }
+        .btn-container { display: flex; justify-content: flex-end; margin-top: 16px; }
+        button { background: var(--primary); color: white; border: none; padding: 10px 24px; font-size: 14px; font-weight: 500; border-radius: 8px; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 8px; }
+        button:hover { background: var(--primary-hover); }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        .status-bar { padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 500; margin-top: 16px; display: none; }
+        .status-success { display: block; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+        .status-error { display: block; background: #fff5f5; color: #c53030; border: 1px solid #feb2b2; }
+        .status-info { display: block; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        footer { text-align: center; padding: 16px; font-size: 12px; color: var(--text-muted); border-top: 1px solid var(--border-color); background: white; margin-top: auto; }
+        .required { color: #ef4444; margin-left: 2px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-container">
+            <div class="brand">
+                <div class="logo">B</div>
+                <span class="brand-title">博客管理后台（本地隔离安全版）</span>
+            </div>
+            <div>
+                <a href="index.html" class="home-link">返回博客首页</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- 左侧配置 -->
+        <div class="left-col">
+            <div class="card">
+                <div class="card-title">⚙️ GitHub 安全鉴权</div>
+                <div class="form-group">
+                    <label>GitHub 账户名 / 组织名</label>
+                    <input type="text" id="repo-owner" placeholder="例如: my-username">
+                </div>
+                <div class="form-group">
+                    <label>仓库名称 (Repository)</label>
+                    <input type="text" id="repo-name" placeholder="例如: my-blog-repo">
+                </div>
+                <div class="form-group">
+                    <label>分支名称 (Branch)</label>
+                    <input type="text" id="repo-branch" value="main">
+                </div>
+                <div class="form-group">
+                    <label>存储路径 (相对仓库根目录)</label>
+                    <input type="text" id="repo-path" value="posts/">
+                </div>
+                <div class="form-group token-zone">
+                    <label style="color: var(--warning-text); font-weight: 600;">个人访问令牌 (Token)</label>
+                    <input type="password" id="github-token" class="token-input font-mono" autocomplete="off" placeholder="ghp_xxxxxxxxxxxx">
+                    <label style="margin-top:4px; font-size:11px;">【安全保障】本页无外部脚本。Token 仅留存在当前浏览器内存，绝不外泄。</label>
+                </div>
+            </div>
+
+            <div class="tip-box">
+                <strong>🛡️ 安全隔离机制说明：</strong><br><br>
+                当前页面已被切断所有外部 CDN 加载渠道。页面内部不包含任何第三方 JavaScript 代码，所有的渲染与网络中转均通过浏览器原生的核心组件直接对接 GitHub API 官方节点（api.github.com），可完全免疫网络中间人劫持与前端供应链漏洞威胁。
+            </div>
+        </div>
+
+        <!-- 右侧编辑器 -->
+        <div class="right-col">
+            <div class="card editor-container">
+                <div class="card-title">📝 文章在线编辑</div>
+                
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>文件名<span class="required">*</span></label>
+                        <input type="text" id="filename" class="font-mono" placeholder="例如: article.md">
+                    </div>
+                    <div class="form-group">
+                        <label>提交注释 (Commit Message)</label>
+                        <input type="text" id="commit-msg" placeholder="默认: Web Admin: Add/Update file">
+                    </div>
+                </div>
+
+                <div class="form-group" style="flex-grow:1; display:flex; flex-direction:column;">
+                    <label>文章内容 (Markdown)<span class="required">*</span></label>
+                    <textarea id="markdown-content" class="font-mono" placeholder="# 在此键入您的文章内容..."></textarea>
+                </div>
+
+                <div id="status-bar" class="status-bar"></div>
+
+                <div class="btn-container">
+                    <button onclick="publishArticle()" id="btn-submit">
+                        <span id="btn-text">安全发布至仓库</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        高安全级别独立沙盒 · 零外部资产引入
+    </footer>
+
+    <script>
+        // 恢复配置
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedOwner = localStorage.getItem('blog_repo_owner');
+            const savedName = localStorage.getItem('blog_repo_name');
+            const savedBranch = localStorage.getItem('blog_repo_branch');
+            const savedPath = localStorage.getItem('blog_repo_path');
+
+            if (savedOwner) document.getElementById('repo-owner').value = savedOwner;
+            if (savedName) document.getElementById('repo-name').value = savedName;
+            if (savedBranch) document.getElementById('repo-branch').value = savedBranch;
+            if (savedPath) document.getElementById('repo-path').value = savedPath;
+        });
+
+        function showStatus(message, type = 'info') {
+            const statusBar = document.getElementById('status-bar');
+            statusBar.style.display = 'block';
+            statusBar.className = 'status-bar';
+            
+            if (type === 'success') statusBar.classList.add('status-success');
+            else if (type === 'error') statusBar.classList.add('status-error');
+            else statusBar.classList.add('status-info');
+            
+            statusBar.innerText = message;
+        }
+
+        async function publishArticle() {
+            const token = document.getElementById('github-token').value.trim();
+            const owner = document.getElementById('repo-owner').value.trim();
+            const repo = document.getElementById('repo-name').value.trim();
+            const branch = document.getElementById('repo-branch').value.trim() || 'main';
+            let path = document.getElementById('repo-path').value.trim() || 'posts/';
+            let filename = document.getElementById('filename').value.trim();
+            const commitMsg = document.getElementById('commit-msg').value.trim() || `Web Admin: Add/Update ${filename}`;
+            const content = document.getElementById('markdown-content').value;
+
+            if (!token) return showStatus('请输入您的 GitHub Token！', 'error');
+            if (!owner || !repo) return showStatus('账户名和仓库名不能为空！', 'error');
+            if (!filename) return showStatus('请输入文件名！', 'error');
+            if (!content) return showStatus('文章内容不能为空！', 'error');
+
+            if (!path.endsWith('/')) path += '/';
+            if (path.startsWith('/')) path = path.substring(1);
+            if (filename.startsWith('/')) filename = filename.substring(1);
+
+            localStorage.setItem('blog_repo_owner', owner);
+            localStorage.setItem('blog_repo_name', repo);
+            localStorage.setItem('blog_repo_branch', branch);
+            localStorage.setItem('blog_repo_path', path);
+
+            const btnSubmit = document.getElementById('btn-submit');
+            const btnText = document.getElementById('btn-text');
+            
+            btnSubmit.disabled = true;
+            btnText.innerText = '正在执行安全传输...';
+            showStatus('正在握手 GitHub API，请稍候...', 'info');
+
+            const targetUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}${filename}`;
+
+            try {
+                let fileSha = null;
+                const checkRes = await fetch(`${targetUrl}?ref=${branch}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                if (checkRes.ok) {
+                    const fileData = await checkRes.json();
+                    fileSha = fileData.sha;
+                }
+
+                // 纯原生中文字符安全编码
+                const utf8Bytes = new TextEncoder().encode(content);
+                let binaryStr = '';
+                for (let i = 0; i < utf8Bytes.length; i++) {
+                    binaryStr += String.fromCharCode(utf8Bytes[i]);
+                }
+                const base64Content = btoa(binaryStr);
+
+                const bodyData = {
+                    message: commitMsg,
+                    content: base64Content,
+                    branch: branch
+                };
+                if (fileSha) bodyData.sha = fileSha;
+
+                const uploadRes = await fetch(targetUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/vnd.github.v3+json'
+                    },
+                    body: JSON.stringify(bodyData)
+                });
+
+                if (uploadRes.ok) {
+                    showStatus(`🎉 安全发布成功！文章已送达云端仓库。`, 'success');
+                    document.getElementById('filename').value = '';
+                    document.getElementById('markdown-content').value = '';
+                } else {
+                    const errData = await uploadRes.json();
+                    showStatus(`提交拒绝: ${errData.message || '未知异常'}`, 'error');
+                }
+
+            } catch (error) {
+                console.error(error);
+                showStatus(`网络或客户端通信异常: ${error.message}`, 'error');
+            } finally {
+                btnSubmit.disabled = false;
+                btnText.innerText = '安全发布至仓库';
+            }
+        }
+    </script>
+</body>
+</html>
