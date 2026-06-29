@@ -13,11 +13,15 @@ jobs:
       contents: write       # 允许推送回仓库
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 关键：获取所有历史记录，确保 git log 能查到旧文件的提交时间
 
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          fetch-depth: 0 # 关键：获取所有历史记录，确保 git log 能查到旧文件的提交时间
+
+      - name: Restore timestamps
+        uses: chetan/git-restore-mtime-action@v2 # 这个插件会自动把所有文件的硬盘修改时间修改为它们最后一次 commit 的时间
 
       - name: 扫描文章并生成 config.js
         run: python3 generate_list.py --owner "${{ github.repository_owner }}" --repo "${{ github.event.repository.name }}" --branch "main"
