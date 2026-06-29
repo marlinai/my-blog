@@ -189,10 +189,12 @@
                     const file = article.file;
                     listHtml += `
                         <li class="border-b border-gray-100 pb-3">
-                            <a href="?post=${file}" class="text-lg font-medium text-blue-600 hover:text-blue-800 hover:underline transition">
-                                ${escapeHtml(title)}
-                            </a>
-                            ${article.date ? `<span class="text-sm text-gray-400 mx-2">${article.date}</span>` : ''}
+                            <div class="flex justify-between items-center">
+                                <a href="?post=${file}" class="text-lg font-medium text-blue-600 hover:text-blue-800 hover:underline transition">
+                                    ${escapeHtml(title)}
+                                </a>
+                                ${article.date ? `<span class="text-sm text-gray-400 whitespace-nowrap">${article.date}</span>` : ''}
+                            </div>
                             ${article.summary ? `<p class="text-sm text-gray-500 mt-1">${escapeHtml(article.summary)}</p>` : ''}
                         </li>
                     `;

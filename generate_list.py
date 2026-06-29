@@ -124,7 +124,7 @@ def generate_config(blog_title, owner, repo, branch):
 
         # 获取文件修改时间
         mtime = os.path.getmtime(md_path)
-        date_str = datetime.fromtimestamp(mtime).strftime("%Y-%m-%d")
+        date_str = datetime.fromtimestamp(mtime).strftime("%Y-%m-%d %H:%M:%S")
 
         article = {
             "file": filename,
