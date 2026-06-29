@@ -116,7 +116,7 @@ def get_last_commit_time(file_path, repo_root):
         rel_path = os.path.relpath(file_path, repo_root)
 
         # 👇 1. 直接在这里强行抛出异常，不给后面任何执行 Git 的机会
-        raise RuntimeError("故意关闭 Git 功能以测试文件系统时间")
+        # raise RuntimeError("故意关闭 Git 功能以测试文件系统时间")
 
         result = subprocess.run(
             ["git", "log", "-1", "--format=%ci", "--", rel_path],
