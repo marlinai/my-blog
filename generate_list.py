@@ -136,9 +136,12 @@ def get_last_commit_time(file_path, repo_root):
         pass
 
     # 回退：使用文件系统修改时间
+    from datetime import timezone, timedelta # 导入时区库
     mtime = os.path.getmtime(file_path)
-    fallback_time = datetime.fromtimestamp(mtime).strftime("%Y-%m-%d %H:%M:%S")
-    # 👇 新增这一行：如果回退到文件系统，打印明显的标记
+    # 强制创建一个东八区（北京时间）的时区对象
+    beijing_tz = timezone(timedelta(hours=8))
+    # 将时间戳转换为带北京时区的时间，再格式化输出
+    fallback_time = datetime.fromtimestamp(mtime, tz=beijing_tz).strftime("%Y-%m-%d %H:%M:%S")
     print(f"    [来源: 文件系统] Git 未命中，使用硬盘 mtime -> {fallback_time}")
     return fallback_time
 
