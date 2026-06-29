@@ -80,53 +80,22 @@
 
         // 2. 路由判断
         if (currentPost) {
-            // 【详情页】：同时 fetch md 文件和获取最后 commit 时间
-            Promise.all([
-                fetch(`./posts/${currentPost}`).then(res => {
-                    if (!res.ok) throw new Error('文章未找到');
-                    return res.text();
-                }),
-                fetch(`https://api.github.com/repos/${BLOG_CONFIG.owner}/${BLOG_CONFIG.repo}/commits?path=posts/${encodeURIComponent(currentPost)}&per_page=1`)
-                    .then(res => res.ok ? res.json() : null)
-                    .catch(() => null) // API 报错或限流时优雅降级
-            ])
-            .then(([markdownText, commits]) => {
-                // 提取最后推送时间
-                let dateStr = '';
-                if (commits && commits.length > 0) {
-                    const d = new Date(commits[0].commit.committer.date);
-                    const pad = n => String(n).padStart(2, '0');
-                    dateStr = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-                }
-
-                // 从 markdown 提取标题
-                const lines = markdownText.split('\n');
-                const firstLine = lines[0];
-                let title = currentPost;
-                let bodyMarkdown = markdownText;
-
-                if (firstLine.startsWith('# ')) {
-                    title = firstLine.replace('# ', '').trim();
-                    // 去掉第一行（因为我们要重新自定义带时间的 H1 标题）
-                    bodyMarkdown = lines.slice(1).join('\n');
-                }
-
-                document.title = title + ' - ' + BLOG_CONFIG.title;
-
-                // 组装带“最后推送时间”的标题 HTML
-                let headerHtml = `<h1 class="text-3xl font-bold text-gray-900 mb-2">${escapeHtml(title)}</h1>`;
-                if (dateStr) {
-                    headerHtml += `<div class="text-sm text-gray-400 mb-6 pb-4 border-b border-gray-200">最后推送时间：${dateStr}</div>`;
-                } else {
-                    headerHtml += `<div class="mb-6 pb-4 border-b border-gray-200"></div>`;
-                }
-
-                // 渲染最终页面
-                contentDiv.innerHTML = headerHtml + marked.parse(bodyMarkdown);
-            })
-            .catch(err => {
-                show404();
-            });
+            // 【详情页】：直接 fetch md 文件，不依赖 config.js
+            fetch(`./posts/${currentPost}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('文章未找到');
+                    return response.text();
+                })
+                .then(markdownText => {
+                    // 从 markdown 提取标题
+                    const firstLine = markdownText.split('\n')[0];
+                    const title = firstLine.startsWith('# ') ? firstLine.replace('# ', '').trim() : currentPost;
+                    document.title = title + ' - ' + BLOG_CONFIG.title;
+                    contentDiv.innerHTML = marked.parse(markdownText);
+                })
+                .catch(err => {
+                    show404();
+                });
         } else {
             // 【首页】：动态获取文章列表
             renderHomePage();
