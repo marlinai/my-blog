@@ -115,9 +115,8 @@ def get_last_commit_time(file_path, repo_root):
     try:
         rel_path = os.path.relpath(file_path, repo_root)
 
-
-        # 👇 故意注入一行错误的命令，让 git 报错直接进入 except 逻辑
-        result = subprocess.run(["git", "invalid-command-haha"], capture_output=True, text=True)
+        # 👇 1. 直接在这里强行抛出异常，不给后面任何执行 Git 的机会
+        raise RuntimeError("故意关闭 Git 功能以测试文件系统时间")
 
         result = subprocess.run(
             ["git", "log", "-1", "--format=%ci", "--", rel_path],
