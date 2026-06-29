@@ -7,6 +7,6 @@ const BLOG_CONFIG = {
     branch: "main",
     articles: [
         { file: "test5.md", title: "test5 测试 二次修改", date: "2026-06-29 11:56:44", summary: "大喊大叫抗生素 几点接电话都不懂 就大舅大舅的很好的" },
-        { file: "test4.md", title: "白嫩嫩方便", date: "2026-06-29 09:53:36", summary: "都会宽带开始的" }
+        { file: "test4.md", title: "白嫩嫩方便", date: "2026-06-29 09:53:37", summary: "都会宽带开始的" }
     ]
 };
