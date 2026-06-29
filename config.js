@@ -6,7 +6,7 @@ const BLOG_CONFIG = {
     repo: "my-blog",
     branch: "main",
     articles: [
-        { file: "test2.md", title: "这是第二个测试", date: "2026-06-29 00:31:11", summary: null },
+        { file: "test2.md", title: "这是第二个测1试", date: "2026-06-29 00:31:11", summary: null },
         { file: "test3.md", title: "此时我好好的办刊数额", date: "2026-06-29 00:31:11", summary: "下不假思索爷爷呢" },
         { file: "test.md", title: "这是测试页", date: "2026-06-28 23:36:51", summary: null },
         { file: "codex.md", title: "OpenAI Codex 模型本地接入与高效使用指南", date: "2026-06-28 22:34:40", summary: "本教程将为你详细讲解如何通过官方 API 接入 OpenAI Codex（或目前替代的最新低延迟代码模型如 gpt-4o / o1 系列、code-davinci-002），以及如何在主流代码编辑器中…" },
