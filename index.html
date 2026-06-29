@@ -238,6 +238,9 @@
             } else if (currentSortOrder === 'file-desc') {
                 // 按文件名倒序排列
                 sorted.sort((a, b) => b.file.localeCompare(a.file));
+            } else if (currentSortOrder === 'file-asc') {
+                // 按文件名正序排列（新加入）
+                sorted.sort((a, b) => a.file.localeCompare(b.file));
             }
 
             // 2. 执行分页切片
@@ -306,6 +309,7 @@
                                 <option value="date-desc" ${currentSortOrder === 'date-desc' ? 'selected' : ''}>发布时间 (最新)</option>
                                 <option value="date-asc" ${currentSortOrder === 'date-asc' ? 'selected' : ''}>发布时间 (最早)</option>
                                 <option value="file-desc" ${currentSortOrder === 'file-desc' ? 'selected' : ''}>文件名倒序</option>
+                                <option value="file-asc" ${currentSortOrder === 'file-asc' ? 'selected' : ''}>文件名正序</option>
                             </select>
                         </div>
                         <!-- 每页条数选择 -->
