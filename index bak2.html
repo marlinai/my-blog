@@ -87,33 +87,16 @@
                     return res.text();
                 }),
                 fetch(`https://api.github.com/repos/${BLOG_CONFIG.owner}/${BLOG_CONFIG.repo}/commits?path=posts/${encodeURIComponent(currentPost)}&per_page=1`)
-                    .then(res => {
-                        if (!res.ok) throw new Error('API 被限流或失败');
-                        return res.json();
-                    })
-                    .catch(() => {
-                        // API 失败或限流时，从本地 config.js 寻找对应的文章作为兜底获取时间
-                        console.warn('详情页 GitHub API 请求失败或限流，正在尝试读取本地 config.js 兜底时间...');
-                        const localArticle = BLOG_CONFIG.articles ? BLOG_CONFIG.articles.find(a => a.file === currentPost) : null;
-                        return localArticle && localArticle.date ? [{ commit: { committer: { date: localArticle.date } } }] : null;
-                    })
+                    .then(res => res.ok ? res.json() : null)
+                    .catch(() => null) // API 报错或限流时优雅降级
             ])
             .then(([markdownText, commits]) => {
                 // 提取最后推送时间
                 let dateStr = '';
                 if (commits && commits.length > 0) {
-                    const rawDate = commits[0].commit.committer.date;
-                    if (rawDate) {
-                        const d = new Date(rawDate);
-                        // 判断是否是有效的日期对象
-                        if (!isNaN(d.getTime())) {
-                            const pad = n => String(n).padStart(2, '0');
-                            dateStr = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-                        } else {
-                            // 如果 config.js 里的日期不是标准的 ISO 字符串（例如直接写好了格式），则直接原样输出
-                            dateStr = rawDate;
-                        }
-                    }
+                    const d = new Date(commits[0].commit.committer.date);
+                    const pad = n => String(n).padStart(2, '0');
+                    dateStr = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
                 }
 
                 // 从 markdown 提取标题
