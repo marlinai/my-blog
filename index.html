@@ -73,6 +73,12 @@
         document.title = BLOG_CONFIG.title;
         document.getElementById('blog-title').innerText = BLOG_CONFIG.title;
 
+        // 全局分页与排序状态
+        let allArticles = [];
+        let currentPage = 1;
+        let pageSize = 20;
+        let currentSortOrder = 'date-desc'; // 默认：时间最新在上面
+
         // 1. 获取 URL 参数 (例如: index.html?post=hello-world.md)
         const urlParams = new URLSearchParams(window.location.search);
         const currentPost = urlParams.get('post');
@@ -168,7 +174,7 @@
                 }
 
                 // 用 Promise.all 批量获取每个文件的内容（提取标题）和最后提交时间
-                const articles = await Promise.all(
+                allArticles = await Promise.all(
                     posts.map(async (file) => {
                         const [contentRes, commitRes] = await Promise.all([
                             fetch(file.download_url),
@@ -201,16 +207,75 @@
                     })
                 );
 
-                // 按文件名倒序排列
-                articles.sort((a, b) => b.file.localeCompare(a.file));
-                renderArticleList(articles);
+                processAndRenderList();
 
             } catch (err) {
                 // API 失败或限流 → 兜底使用 config.js
                 console.warn('GitHub API 请求失败，使用本地 config.js 兜底:', err.message);
-                // 合并 config.js 中的文章和本地文章列表
-                renderArticleList(BLOG_CONFIG.articles);
+                allArticles = BLOG_CONFIG.articles || [];
+                processAndRenderList();
             }
+        }
+
+        // 统一处理排序与分页流
+        function processAndRenderList() {
+            // 1. 执行排序
+            const sorted = [...allArticles];
+            if (currentSortOrder === 'date-desc') {
+                // 时间从新到旧 (无日期的排在最后面)
+                sorted.sort((a, b) => {
+                    if (!a.date) return 1;
+                    if (!b.date) return -1;
+                    return b.date.localeCompare(a.date);
+                });
+            } else if (currentSortOrder === 'date-asc') {
+                // 时间从旧到新 (无日期的排在最后面)
+                sorted.sort((a, b) => {
+                    if (!a.date) return 1;
+                    if (!b.date) return -1;
+                    return a.date.localeCompare(b.date);
+                });
+            } else if (currentSortOrder === 'file-desc') {
+                // 按文件名倒序排列
+                sorted.sort((a, b) => b.file.localeCompare(a.file));
+            }
+
+            // 2. 执行分页切片
+            const totalItems = sorted.length;
+            const totalPages = Math.ceil(totalItems / pageSize) || 1;
+            
+            // 安全边界检查：防止修改单页条数时导致当前页超出范围
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = startIndex + pageSize;
+            const paginatedArticles = sorted.slice(startIndex, endIndex);
+
+            // 3. 渲染
+            renderArticleList(paginatedArticles, totalItems, totalPages);
+        }
+
+        // 改变每页显示条数
+        window.changePageSize = function(value) {
+            pageSize = parseInt(value, 10) || 20;
+            currentPage = 1; // 切换条数后重置回第一页
+            processAndRenderList();
+        }
+
+        // 改变排序规则
+        window.changeSortOrder = function(value) {
+            currentSortOrder = value;
+            currentPage = 1; // 改变排序后重置回第一页
+            processAndRenderList();
+        }
+
+        // 翻页跳转
+        window.goToPage = function(page) {
+            currentPage = page;
+            processAndRenderList();
+            // 翻页后平滑滚动回顶部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         // 404 页面
@@ -225,11 +290,40 @@
             `;
         }
 
-        function renderArticleList(articles) {
-            let listHtml = `<h2 class="text-2xl font-bold text-gray-900 mb-6">📝 近期文章</h2>`;
+        function renderArticleList(articles, totalItems, totalPages) {
+            // 工具栏：包含总条数提示、排序切换、每页数量自定义
+            let listHtml = `
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 mb-6 border-b border-gray-200 gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 m-0">📝 近期文章</h2>
+                        <p class="text-xs text-gray-400 mt-1 m-0">共收录 ${totalItems} 篇文章</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2 text-sm">
+                        <!-- 排序选择 -->
+                        <div class="flex items-center gap-1">
+                            <span class="text-gray-500 whitespace-nowrap">排序:</span>
+                            <select onchange="changeSortOrder(this.value)" class="bg-white border border-gray-300 rounded px-2 py-1 text-gray-700 focus:outline-none focus:border-blue-500">
+                                <option value="date-desc" ${currentSortOrder === 'date-desc' ? 'selected' : ''}>发布时间 (最新)</option>
+                                <option value="date-asc" ${currentSortOrder === 'date-asc' ? 'selected' : ''}>发布时间 (最早)</option>
+                                <option value="file-desc" ${currentSortOrder === 'file-desc' ? 'selected' : ''}>文件名倒序</option>
+                            </select>
+                        </div>
+                        <!-- 每页条数选择 -->
+                        <div class="flex items-center gap-1 ml-2">
+                            <span class="text-gray-500 whitespace-nowrap">每页:</span>
+                            <select onchange="changePageSize(this.value)" class="bg-white border border-gray-300 rounded px-2 py-1 text-gray-700 focus:outline-none focus:border-blue-500">
+                                <option value="10" ${pageSize === 10 ? 'selected' : ''}>10篇</option>
+                                <option value="20" ${pageSize === 20 ? 'selected' : ''}>20篇</option>
+                                <option value="50" ${pageSize === 50 ? 'selected' : ''}>50篇</option>
+                                <option value="100" ${pageSize === 100 ? 'selected' : ''}>100篇</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            `;
 
             if (!articles || articles.length === 0) {
-                listHtml += `<p class="text-gray-500">主人很懒，还没有写任何文章~</p>`;
+                listHtml += `<p class="text-gray-500 py-6 text-center">空空如也，还没有任何文章~</p>`;
             } else {
                 listHtml += `<ul class="space-y-4">`;
                 articles.forEach(article => {
@@ -237,7 +331,7 @@
                     const file = article.file;
                     listHtml += `
                         <li class="border-b border-gray-100 pb-3">
-                            <div class="flex justify-between items-center">
+                            <div class="flex justify-between items-center gap-4">
                                 <a href="?post=${file}" class="text-lg font-medium text-blue-600 hover:text-blue-800 hover:underline transition">
                                     ${escapeHtml(title)}
                                 </a>
@@ -248,6 +342,32 @@
                     `;
                 });
                 listHtml += `</ul>`;
+
+                // 翻页组件
+                if (totalPages > 1) {
+                    listHtml += `
+                        <div class="flex items-center justify-center gap-2 mt-8 pt-4 border-t border-gray-100">
+                            <!-- 上一页 -->
+                            <button onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} 
+                                class="px-3 py-1.5 rounded border text-sm font-medium transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-40
+                                ${currentPage === 1 ? 'border-gray-200 text-gray-300 bg-gray-50' : 'border-gray-300 text-gray-600 bg-white hover:bg-gray-50 hover:text-blue-600'}">
+                                ‹ 上一页
+                            </button>
+                            
+                            <!-- 页码指示 -->
+                            <span class="text-sm text-gray-500 px-2">
+                                第 <strong class="text-gray-900">${currentPage}</strong> / ${totalPages} 页
+                            </span>
+
+                            <!-- 下一页 -->
+                            <button onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} 
+                                class="px-3 py-1.5 rounded border text-sm font-medium transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-40
+                                ${currentPage === totalPages ? 'border-gray-200 text-gray-300 bg-gray-50' : 'border-gray-300 text-gray-600 bg-white hover:bg-gray-50 hover:text-blue-600'}">
+                                下一页 ›
+                            </button>
+                        </div>
+                    `;
+                }
             }
             contentDiv.innerHTML = listHtml;
         }
