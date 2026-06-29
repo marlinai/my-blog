@@ -131,13 +131,17 @@
                         const firstLine = text.split('\n')[0];
                         const title = firstLine.startsWith('# ') ? firstLine.replace('# ', '').trim() : file.name.replace('.md', '');
 
-                        // 从最后一次 commit 中提取修改时间
+                        // 从最后一次 commit 中提取修改时间（精确到秒，转为本地时区）
                         let date = '';
                         if (commitRes.ok) {
                             const commits = await commitRes.json();
                             if (commits.length > 0) {
                                 const dateStr = commits[0].commit.committer.date;
-                                date = dateStr ? dateStr.substring(0, 10) : '';
+                                if (dateStr) {
+                                    const d = new Date(dateStr);
+                                    const pad = n => String(n).padStart(2, '0');
+                                    date = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+                                }
                             }
                         }
 
