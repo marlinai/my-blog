@@ -1,11 +1,12 @@
 // 此文件由 generate_list.py 自动生成，请勿手动编辑
-// 更新时间: 2026-06-29 09:57:54
+// 更新时间: 2026-06-29 10:02:02
 const BLOG_CONFIG = {
     title: "我的极简个人博客",
     owner: "marlinai",
     repo: "my-blog",
     branch: "main",
     articles: [
+        { file: "test4.md", title: "白嫩嫩方便", date: "2026-06-29 09:59:25", summary: "都会宽带开始的" },
         { file: "test3.md", title: "此时我好好的办刊数额", date: "2026-06-29 00:19:23", summary: "下不假思索爷爷呢" },
         { file: "test2.md", title: "这是第二个测试", date: "2026-06-28 23:50:28", summary: null },
         { file: "test.md", title: "这是测试页", date: "2026-06-28 23:25:25", summary: null },
