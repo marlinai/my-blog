@@ -12,6 +12,7 @@ import os
 import re
 import json
 import argparse
+import subprocess
 from pathlib import Path
 from datetime import datetime
 
@@ -104,6 +105,32 @@ def js_str(s):
     return json.dumps(s, ensure_ascii=False)
 
 
+def get_last_commit_time(file_path, repo_root):
+    """
+    通过 git log 获取文件的最后一次提交时间。
+    比 os.path.getmtime() 可靠——git clone/checkout 后所有文件的
+    filesystem mtime 会被重置为同一时间，而 git log 始终准确。
+    如果文件尚未被 git 提交过，则回退到 filesystem mtime。
+    """
+    try:
+        rel_path = os.path.relpath(file_path, repo_root)
+        result = subprocess.run(
+            ["git", "log", "-1", "--format=%ci", "--", rel_path],
+            capture_output=True, text=True, cwd=repo_root, timeout=10,
+        )
+        output = result.stdout.strip()
+        if output:
+            # git 输出格式: "2026-06-28 22:31:53 +0800"
+            # 去掉时区后缀，只保留日期时间部分
+            return output.rsplit(" ", 1)[0]
+    except Exception:
+        pass
+
+    # 回退：使用文件系统修改时间
+    mtime = os.path.getmtime(file_path)
+    return datetime.fromtimestamp(mtime).strftime("%Y-%m-%d %H:%M:%S")
+
+
 def generate_config(blog_title, owner, repo, branch):
     """主函数：扫描 posts/ 目录，生成 config.js"""
     if not POSTS_DIR.exists():
@@ -122,9 +149,9 @@ def generate_config(blog_title, owner, repo, branch):
 
         title, summary = extract_title_and_summary(md_path)
 
-        # 获取文件修改时间
-        mtime = os.path.getmtime(md_path)
-        date_str = datetime.fromtimestamp(mtime).strftime("%Y-%m-%d %H:%M:%S")
+        # 通过 git log 获取文件最后提交时间（比 filesystem mtime 可靠）
+        repo_root = str(Path(__file__).resolve().parent)
+        date_str = get_last_commit_time(md_path, repo_root)
 
         article = {
             "file": filename,
