@@ -122,13 +122,21 @@ def get_last_commit_time(file_path, repo_root):
         if output:
             # git 输出格式: "2026-06-28 22:31:53 +0800"
             # 去掉时区后缀，只保留日期时间部分
-            return output.rsplit(" ", 1)[0]
-    except Exception:
+            git_time = output.rsplit(" ", 1)[0]
+            # 👇 新增这一行：如果走 git 逻辑成功，打印明显的标记
+            print(f"    [来源: Git Log] 成功获取时间 -> {git_time}")
+            return git_time
+    except Exception as e:
+        # 👇 新增这一行：如果 git 命令执行报错，打印错误原因
+        print(f"    ⚠ Git 报错: {e}")
         pass
 
     # 回退：使用文件系统修改时间
     mtime = os.path.getmtime(file_path)
-    return datetime.fromtimestamp(mtime).strftime("%Y-%m-%d %H:%M:%S")
+    fallback_time = datetime.fromtimestamp(mtime).strftime("%Y-%m-%d %H:%M:%S")
+    # 👇 新增这一行：如果回退到文件系统，打印明显的标记
+    print(f"    [来源: 文件系统] Git 未命中，使用硬盘 mtime -> {fallback_time}")
+    return fallback_time
 
 
 def generate_config(blog_title, owner, repo, branch):
